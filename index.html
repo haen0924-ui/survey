@@ -259,7 +259,12 @@
   .qimg img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .qicon { font-size: 44px; line-height: 1; margin-bottom: 10px; }
   .qimg video { width: 100%; height: 100%; object-fit: cover; display: block; background: #f5f3ec; }
-  .qimg.qvid { height: auto; aspect-ratio: 1 / 1; max-width: 280px; }
+  /* 영상 칸: 영상이 준비되기 전에는 테두리·배경 없이 비어 있음 (첫 장면이 준비되면 테두리가 생김) */
+  .qimg.qvid { height: auto; aspect-ratio: auto; max-width: 280px; border: none; background: none; margin: 0 auto 12px; }
+  .qimg video.qv { width: 100%; height: auto; aspect-ratio: 1 / 1; object-fit: cover; display: block; background: transparent; border: none; border-radius: 16px; }
+  .qimg video.qv.ready { border: 2.5px solid #161514; }
+  /* 사진은 박스 없이 바로 보이게 (사진이 없으면 onerror로 칸 전체가 사라짐) */
+  .qimg:not(.qvid) { border: none; background: none; height: auto; margin-bottom: 8px; }
 
   /* 넓은 화면(PC·태블릿 가로): 이전/다음 버튼을 설문 박스 바깥 좌우 끝에 둠 */
   @media (min-width: 1000px) {
@@ -278,7 +283,7 @@
   }
 
   /* 다음에 보고 싶은 프로그램: 프로그램 그림 */
-  .othumb { width: 100%; max-width: 140px; height: auto; aspect-ratio: 1 / 1; object-fit: cover; border-radius: 10px; display: block; margin: 0 auto 6px; border: 2px solid #161514; }
+  .othumb { width: 100%; max-width: 140px; height: auto; aspect-ratio: 1 / 1; object-fit: cover; border-radius: 10px; display: block; margin: 0 auto 6px; border: none; }
 
   /* 첫 화면 */
   .intro-lang { display: flex; justify-content: flex-end; gap: 8px; margin-bottom: 26px; }
@@ -504,20 +509,27 @@
   document.addEventListener("loadedmetadata", e => {
     const v = e.target;
     if (!v.dataset || !v.dataset.clip) return;
-    const [s] = clipOf(v.dataset.clip);
+    const [s, en] = clipOf(v.dataset.clip);
+    if (!(en > 0)) return; // 구간 설정이 없으면 브라우저 기본 반복 재생을 그대로 사용
     v.currentTime = s;
     if (v.hasAttribute("autoplay")) v.play().catch(() => {});
+  }, true);
+  // 첫 장면이 준비되면 테두리를 보여 줌
+  document.addEventListener("loadeddata", e => {
+    if (e.target.classList && e.target.classList.contains("qv")) e.target.classList.add("ready");
   }, true);
   // 구간 끝에 닿으면 다시 시작 지점으로
   document.addEventListener("timeupdate", e => {
     const v = e.target;
     if (!v.dataset || !v.dataset.clip || !v.hasAttribute("autoplay")) return;
     const [s, en] = clipOf(v.dataset.clip);
+    if (!(en > 0)) return;
     if (v.currentTime >= clipEnd(v, en) - 0.05 || v.currentTime < s) v.currentTime = s;
   }, true);
   document.addEventListener("ended", e => {
     const v = e.target;
     if (!v.dataset || !v.dataset.clip) return;
+    if (!(clipOf(v.dataset.clip)[1] > 0)) return;
     v.currentTime = clipOf(v.dataset.clip)[0];
     v.play().catch(() => {});
   }, true);
@@ -602,7 +614,7 @@
       q.options.forEach(o => {
         const cls = picked.includes(o.label) ? "selected" : "";
         const pic = o.vid
-          ? `<video class="othumb" src="${o.vid}" data-clip="${o.vid}" autoplay muted loop playsinline preload="auto" onerror="this.remove()"></video>`
+          ? `<video class="othumb" src="${o.vid}" poster="${o.vid.replace('.mp4', '.jpg')}" muted playsinline preload="none" onerror="this.remove()"></video>`
           : o.thumb
           ? `<img class="othumb" src="${o.thumb}" alt="" onerror="this.remove()">`
           : `<span class="big">${o.icon}</span>`;
@@ -637,7 +649,7 @@
     elStep.textContent = (current + 1) + " / " + total;
 
     let media = "";
-    if (q.vid) media = `<div class="qimg qvid"><video src="${q.vid}" data-clip="${q.vid}" autoplay muted playsinline onerror="this.parentNode.remove()"></video></div>`;
+    if (q.vid) media = `<div class="qimg qvid"><video class="qv" src="${q.vid}" poster="${q.vid.replace('.mp4', '.jpg')}" data-clip="${q.vid}" autoplay muted loop playsinline preload="auto" onerror="this.parentNode.remove()"></video></div>`;
     else if (q.img) media = `<div class="qimg"><img src="${q.img}" alt="" onerror="this.parentNode.remove()"></div>`;
     else if (q.icon) media = `<div class="qicon">${q.icon}</div>`;
     elPage.innerHTML = media + `<div class="qtitle">${q.title[lang]}</div>` + optionsHTML(q);
