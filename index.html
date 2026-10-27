@@ -310,6 +310,12 @@
     color: #161514; box-shadow: 4px 4px 0 #161514; cursor: pointer;
   }
   .btn-q:hover { transform: translateY(-2px); }
+  .btn-q-cell {
+    width: 100%; min-height: 60px; font-family: inherit; font-size: 18px; font-weight: 900;
+    border: 3px solid #161514; border-radius: 14px; background: #f4c430; color: #161514;
+    box-shadow: 4px 4px 0 #161514; cursor: pointer;
+  }
+  .btn-q-cell:hover { transform: translateY(-2px); }
 </style>
 </head>
 <body>
@@ -622,7 +628,8 @@
                 ${pic}${optText(o)}
               </div>`;
       });
-      h += `</div>`;
+      // 빈 여섯 번째 칸에 선택 완료 버튼
+      h += `<button type="button" class="btn-q-cell" id="qAction">${lang === "ko" ? "선택 완료" : "Done"}</button></div>`;
     }
 
     if (q.type === "scale") {
@@ -655,11 +662,12 @@
     elPage.innerHTML = media + `<div class="qtitle">${q.title[lang]}</div>` + optionsHTML(q);
 
     // 여러 개 고르는 질문과 마지막 한마디 질문에만 완료 버튼을 둔다
-    if (q.type === "multi" || q.type === "text") {
-      const label = q.type === "text" ? UI[lang].done : (lang === "ko" ? "선택 완료" : "Done");
-      elPage.insertAdjacentHTML("beforeend", `<button type="button" class="btn-q" id="qAction">${label}</button>`);
+    if (q.type === "text") {
+      elPage.insertAdjacentHTML("beforeend", `<button type="button" class="btn-q" id="qAction">${UI[lang].done}</button>`);
       document.getElementById("qAction").addEventListener("click", goNext);
     }
+    const multiBtn = document.getElementById("qAction");
+    if (q.type === "multi" && multiBtn) multiBtn.addEventListener("click", goNext);
   }
 
   function goNext() {
