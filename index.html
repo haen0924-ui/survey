@@ -311,11 +311,15 @@
   }
   .btn-q:hover { transform: translateY(-2px); }
   .btn-q-cell {
-    width: 100%; min-height: 60px; font-family: inherit; font-size: 18px; font-weight: 900;
+    width: auto; justify-self: center; align-self: center; padding: 10px 18px; font-family: inherit; font-size: 18px; font-weight: 900; line-height: 1.2;
     border: 3px solid #161514; border-radius: 14px; background: #f4c430; color: #161514;
     box-shadow: 4px 4px 0 #161514; cursor: pointer;
   }
   .btn-q-cell:hover { transform: translateY(-2px); }
+  /* 다음에 보고 싶은 프로그램: 왼쪽 영상, 오른쪽 글씨 */
+  .multi-opt { display: flex; align-items: center; gap: 12px; text-align: left; padding: 10px 12px; }
+  .multi-opt .othumb { width: 96px; max-width: 96px; margin: 0; flex: 0 0 auto; }
+  .multi-opt .mlabel { font-size: 19px; font-weight: 900; line-height: 1.3; }
 </style>
 </head>
 <body>
@@ -624,8 +628,8 @@
           : o.thumb
           ? `<img class="othumb" src="${o.thumb}" alt="" onerror="this.remove()">`
           : `<span class="big">${o.icon}</span>`;
-        h += `<div class="opt ${cls}" data-v="${o.label}">
-                ${pic}${optText(o)}
+        h += `<div class="opt multi-opt ${cls}" data-v="${o.label}">
+                ${pic}<span class="mlabel">${optText(o)}</span>
               </div>`;
       });
       // 빈 여섯 번째 칸에 선택 완료 버튼
