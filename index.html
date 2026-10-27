@@ -614,7 +614,7 @@
       q.options.forEach(o => {
         const cls = picked.includes(o.label) ? "selected" : "";
         const pic = o.vid
-          ? `<video class="othumb" src="${o.vid}" poster="${o.vid.replace('.mp4', '.jpg')}" muted playsinline preload="none" onerror="this.remove()"></video>`
+          ? `<video class="othumb" src="${o.vid}" poster="${o.vid.replace('.mp4', '.jpg')}" autoplay muted loop playsinline preload="auto" onerror="this.remove()"></video>`
           : o.thumb
           ? `<img class="othumb" src="${o.thumb}" alt="" onerror="this.remove()">`
           : `<span class="big">${o.icon}</span>`;
@@ -688,7 +688,8 @@
     if (q.type === "multi") {
       const arr = answers[q.id] || [];
       answers[q.id] = arr.includes(v) ? arr.filter(x => x !== v) : [...arr, v];
-      render();
+      // 전체를 다시 그리지 않고 선택 표시만 바꿔서 영상이 끊기거나 깜빡이지 않게 함
+      el.classList.toggle("selected", answers[q.id].includes(v));
       return;
     }
 
